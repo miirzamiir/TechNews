@@ -1,25 +1,48 @@
 # TechNews
 
-**TechNews** is a RESTful API designed for the backend of a technology news website. This project was developed as part of a backend internship at **Roshan** and is structured around three main challenges.
+**TechNews** is a RESTful API designed for the backend of a technology news website. This project was developed as part of a backend internship at **Roshan** and is divided into three main challenges.
 
 ## Challenge 1: News Retrieval API
 
-The first challenge focuses on creating a RESTful API to retrieve news articles. Each `news` record includes essential attributes such as `title`, `text`, `tags`, and `resource`. To successfully complete this challenge, the following tasks were undertaken:
+The first challenge focuses on creating a RESTful API for retrieving news articles. Each `news` record includes attributes such as `title`, `text`, `tags`, and `resource`. The following tasks were undertaken to complete this challenge:
 
 1. **Database Model Design & Implementation:**  
-   Designing and implementing the underlying database structure to store news articles efficiently.
+   Designed and implemented the database structure to efficiently store and manage news articles.
 
 2. **API Implementation:**  
-   Developing the API endpoints for creating, reading, updating, and deleting news records.
+   Developed API endpoints to create, read, update, and delete news records.
 
 3. **Filter by Tag Feature:**  
-   Adding functionality to filter news articles based on specific tags.
+   Added functionality to filter news articles based on specific tags.
 
 4. **Unit Testing:**  
-   Writing unit tests to ensure the reliability and correctness of the API.
+   Wrote unit tests to ensure the API's reliability and correctness.
 
-Due to complete these tasks, at first I created the repository and added `.gitignore` and `README.md` files. Then I started the project `TechNews` by command:\
-`django-admin startproject TechNews .`
-Then I added `requirements.txt` file to reference all needed packages in the project.
-// adding app.
-These steps were needed in order to initiate the project. From this point, as it was asked in the project document, the project will have a new branch called `ch1`.
+### Project Setup and Initialization
+
+The project was initiated with the following steps:
+
+1. **Repository Creation:**  
+   A new Git repository was created, and initial files such as `.gitignore` and `README.md` were added.
+
+2. **Starting the Project:**  
+   The Django project was initialized with the following command:  
+   ```bash
+   django-admin startproject TechNews .
+
+3. **Adding Dependencies:**\
+   A `requirements.txt` file was created to list all necessary packages for the project.
+
+4. **Database Configuration and App Creation:**\
+   After configuring the database in `settings.py`, the `news` app was created using the command:
+   ```bash
+   python3 manage.py startapp news
+
+- These steps were needed in order to initiate the project. From this point, as outlined in the project document, the project will have a new branch called `ch1` and all changes related to the first challenge will be done there.
+   
+### Changes in ch1 Branch
+1. **Design and Implementation of models**:\
+The `News` and `Tag` models were created to represent the news articles and their associated tags. The `Tag` model contains a single attribute, `tag_label`, representing the name of the `tag`. The `News` model includes the following attributes:
+
+2. **Implementation of `News` and `Tags` APIs**:\
+To implement these endpoints, serializers were created for each model. The `NewsSerializer` and `TagSerializer` were developed based on the defined models. These serializers were then utilized in the corresponding `viewsets`, `NewsViewSet` and `TagViewSet`, which extend `ReadOnlyModelViewSet`. This allows for efficient retrieval of news articles and tags through the API.
