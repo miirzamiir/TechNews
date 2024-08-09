@@ -17,3 +17,9 @@ The first challenge focuses on creating a RESTful API to retrieve news articles.
 
 4. **Unit Testing:**  
    Writing unit tests to ensure the reliability and correctness of the API.
+
+Due to complete these tasks, at first I created the repository and added `.gitignore` and `README.md` files. Then I started the project `TechNews` by command:\
+`django-admin startproject TechNews .`
+Then I added `requirements.txt` file to reference all needed packages in the project.
+// adding app.
+These steps were needed in order to initiate the project. From this point, as it was asked in the project document, the project will have a new branch called `ch1`.
