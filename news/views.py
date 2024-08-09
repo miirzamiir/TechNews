@@ -1,3 +1,13 @@
-from django.shortcuts import render
+from rest_framework.viewsets import ReadOnlyModelViewSet
+from . import models
+from . import serializers
 
-# Create your views here.
+
+class NewsViewSet(ReadOnlyModelViewSet):
+    serializer_class = serializers.NewsSerializer
+    queryset = models.News.objects.all()
+
+
+class TagViewSet(ReadOnlyModelViewSet):
+    serializer_class = serializers.TagSerializer
+    queryset = models.Tag.objects.all()
