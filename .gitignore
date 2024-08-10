@@ -272,3 +272,8 @@ pyrightconfig.json
 
 دوره کارآموزی.pdf
 کارآموزی بک‌اند.pdf
+
+
+### Test Coverage ###
+.coverage
+htmlcov/*

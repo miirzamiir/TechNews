@@ -55,3 +55,12 @@ To implement these endpoints, serializers were created for each model. The `News
 The `NewsViewSet` now supports filtering by `tag`, implemented using the `DjangoFilterBackend` from the `django-filter` package.
 
 4. **Writing unit tests**:
+Unit tests have been created for the `models`, `serializers`, and `views` within the `news` app. These tests are located in the `tests` directory. To run the tests, use the following command:
+   ```bash
+   python3 manage.py test
+   ```
+   And also to generate a coverage report for these tests, run:
+   ```bash
+   coverage run manage.py test && coverage html
+   ```
+   The coverage report will be available at `project_root/htmlcov/index.html` .

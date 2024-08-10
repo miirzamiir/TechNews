@@ -10,7 +10,7 @@ class Tag(models.Model):
 
 class News(models.Model):
     title = models.CharField(max_length=255)
-    text = models.TextField(null=True)
+    text = models.TextField()
     tags = models.ManyToManyField(to=Tag)
     resource = models.URLField(blank=False, unique=True)
 
