@@ -40,9 +40,14 @@ The project was initiated with the following steps:
 
 - These steps were needed in order to initiate the project. From this point, as outlined in the project document, the project will have a new branch called `ch1` and all changes related to the first challenge will be done there.
    
-### Changes in ch1 Branch
+### Changes in Branch `ch1`
 1. **Design and Implementation of models**:\
 The `News` and `Tag` models were created to represent the news articles and their associated tags. The `Tag` model contains a single attribute, `tag_label`, representing the name of the `tag`. The `News` model includes the following attributes:
 
 2. **Implementation of `News` and `Tags` APIs**:\
 To implement these endpoints, serializers were created for each model. The `NewsSerializer` and `TagSerializer` were developed based on the defined models. These serializers were then utilized in the corresponding `viewsets`, `NewsViewSet` and `TagViewSet`, which extend `ReadOnlyModelViewSet`. This allows for efficient retrieval of news articles and tags through the API.
+
+3. **Filtering by `tag`** :
+The `NewsViewSet` now supports filtering by `tag`, implemented using the `DjangoFilterBackend` from the `django-filter` package.
+
+4. **Writing unit tests**:
