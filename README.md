@@ -40,9 +40,29 @@ The project was initiated with the following steps:
 
 - These steps were needed in order to initiate the project. From this point, as outlined in the project document, the project will have a new branch called `ch1` and all changes related to the first challenge will be done there.
    
-### Changes in ch1 Branch
+### Changes in Branch `ch1`
 1. **Design and Implementation of models**:\
 The `News` and `Tag` models were created to represent the news articles and their associated tags. The `Tag` model contains a single attribute, `tag_label`, representing the name of the `tag`. The `News` model includes the following attributes:
+   - `title`: The `title` of the `news`.
+   - `text`: The content of the `news`.
+   - `resource`: A URL field storing the original source of the `news`.
+   - `tags`: A `ManyToManyField` linking `news` to multiple `Tag` instances.
 
 2. **Implementation of `News` and `Tags` APIs**:\
 To implement these endpoints, serializers were created for each model. The `NewsSerializer` and `TagSerializer` were developed based on the defined models. These serializers were then utilized in the corresponding `viewsets`, `NewsViewSet` and `TagViewSet`, which extend `ReadOnlyModelViewSet`. This allows for efficient retrieval of news articles and tags through the API.
+
+3. **Filtering by `tag`** :
+The `NewsViewSet` now supports filtering by `tag`, implemented using the `DjangoFilterBackend` from the `django-filter` package.
+
+4. **Writing unit tests**:
+Unit tests have been created for the `models`, `serializers`, and `views` within the `news` app. These tests are located in the `tests` directory. To run the tests, use the following command:
+   ```bash
+   python3 manage.py test
+   ```
+   And also to generate a coverage report for these tests, run:
+   ```bash
+   coverage run manage.py test && coverage html
+   ```
+   The coverage report will be available at `project_root/htmlcov/index.html` .
+
+- Also **search functionality** and **pagination** were implemented in both the `News` and `Tag` views.

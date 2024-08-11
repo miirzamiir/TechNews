@@ -1,3 +1,6 @@
 django
 djangorestframework
 psycopg2-binary
+python-dotenv
+django-filter
+coverage
