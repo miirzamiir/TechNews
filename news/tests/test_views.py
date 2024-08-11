@@ -22,6 +22,16 @@ class TagViewSetTest(APITestCase):
         self.assertEqual(tag.status_code, 200)
         self.assertEqual(tag.data['tag_label'], "T1(g)ی")
 
+    def test_search_tag(self):
+        search_tag1 = Tag.objects.create(tag_label="search tag 1")
+        search_tag2 = Tag.objects.create(tag_label="search tag 2")
+        response = self.client.get(reverse('tag-list'), {'search': 'search'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(response.data['results'][0]['tag_label'], "search tag 1")
+        self.assertEqual(response.data['results'][1]['tag_label'], "search tag 2")
+        self.assertNotIn("T1(g)ی", [tags['tag_label'] for tags in response.data['results']])
+
 
 class NewsViewSetTest(APITestCase):
 

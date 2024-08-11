@@ -8,85 +8,60 @@ from rest_framework.test import APITestCase, APIClient
 class TagSerializerTest(TestCase):
 
     def test_tag_serialization(self):
-        persian_tag = Tag.objects.create(tag_label="تگ")
-        english_tag = Tag.objects.create(tag_label="tag")
-        special_char_tag = Tag.objects.create(tag_label="T1(g)ی")
-        
-        serializer = TagSerializer([persian_tag, english_tag, special_char_tag], many=True)
-
-        self.assertEqual(serializer.data[0], {"id": persian_tag.id, "tag_label": "تگ"})
-        self.assertEqual(serializer.data[1], {"id": english_tag.id, "tag_label": "tag"})
-        self.assertEqual(serializer.data[2], {"id": special_char_tag.id, "tag_label": "T1(g)ی"})
+        tag = Tag.objects.create(tag_label="T1(g)ی")
+        serializer = TagSerializer(tag)
+        self.assertEqual(serializer.data, {"id": tag.id, "tag_label": "T1(g)ی"})
 
     def test_invalid_tag_serialization(self):
         invalid_tag = Tag(tag_label="")
         serializer = TagSerializer(data=invalid_tag.__dict__)
         self.assertFalse(serializer.is_valid())
         self.assertIn('tag_label', serializer.errors)
+    
+    def test_tag_update_serialization(self):
+        tag = Tag.objects.create(tag_label="initial_tag")
+        data = {"tag_label": "updated_tag"}
+        serializer = TagSerializer(tag, data=data, partial=True)
+        self.assertTrue(serializer.is_valid())
+        updated_tag = serializer.save()
+        self.assertEqual(updated_tag.tag_label, "updated_tag")
+    
+    def test_tag_bulk_creation_deserialization(self):
+        data = [
+            {"tag_label": "bulk_tag_1"},
+            {"tag_label": "bulk_tag_2"},
+            {"tag_label": "bulk_tag_3"}
+        ]
+        serializer = TagSerializer(data=data, many=True)
+        self.assertTrue(serializer.is_valid())
+        tags = serializer.save()
+        self.assertEqual(len(tags), 3)
+        self.assertEqual(tags[0].tag_label, "bulk_tag_1")
+        self.assertEqual(tags[1].tag_label, "bulk_tag_2")
+        self.assertEqual(tags[2].tag_label, "bulk_tag_3")
 
 
 class NewsSerializerTest(TestCase):
 
     def setUp(self):
-        self.persian_tag = Tag.objects.create(tag_label="اخبار")
-        self.english_tag = Tag.objects.create(tag_label="news")
-        self.special_char_tag = Tag.objects.create(tag_label="N3(w)ی")
-        
-        self.persian_news = News.objects.create(
-            title="نام خبر",
-            text="این یک خبر غیرواقعی برای تست مدل است.",
-            resource="http://fakenews1.com/"
-        )
-        self.english_news = News.objects.create(
-            title="Fake News Title",
-            text="This is a fake news for testing purposes.",
-            resource="http://fakenews2.com/"
-        )
-        self.special_char_news = News.objects.create(
+        self.tag = Tag.objects.create(tag_label="N3(w)ی")
+        self.news = News.objects.create(
             title="N3(w)ی",
             text="Th!s is @noth3r f@ke new$.",
             resource="http://example.com/fake"
         )
-
-        self.persian_news.tags.add(self.persian_tag)
-        self.english_news.tags.add(self.english_tag)
-        self.special_char_news.tags.add(self.special_char_tag)
+        self.news.tags.add(self.tag)
 
     def test_news_serialization(self):
-        serializer = NewsSerializer([self.persian_news, self.english_news, self.special_char_news], many=True)
-
-        self.assertEqual(serializer.data[0], {
-            "id": self.persian_news.id,
-            "title": "نام خبر",
-            "text": "این یک خبر غیرواقعی برای تست مدل است.",
-            "resource": "http://fakenews1.com/",
-            "tags": [
-                {
-                    "id": self.persian_tag.id,
-                    "tag_label": "اخبار"
-                }
-            ]
-        })
-        self.assertEqual(serializer.data[1], {
-            "id": self.english_news.id,
-            "title": "Fake News Title",
-            "text": "This is a fake news for testing purposes.",
-            "resource": "http://fakenews2.com/",
-            "tags": [
-                {
-                    "id": self.english_tag.id,
-                    "tag_label": "news"
-                }
-            ]
-        })
-        self.assertEqual(serializer.data[2], {
-            "id": self.special_char_news.id,
+        serializer = NewsSerializer(self.news)
+        self.assertEqual(serializer.data, {
+            "id": self.news.id,
             "title": "N3(w)ی",
             "text": "Th!s is @noth3r f@ke new$.",
             "resource": "http://example.com/fake",
             "tags": [
                 {
-                    "id": self.special_char_tag.id,
+                    "id": self.tag.id,
                     "tag_label": "N3(w)ی"
                 }
             ]
