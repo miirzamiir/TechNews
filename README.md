@@ -38,9 +38,9 @@ The project was initiated with the following steps:
    ```bash
    python3 manage.py startapp news
 
-- These steps were needed in order to initiate the project. From this point, as outlined in the project document, the project will have a new branch called `ch1` and all changes related to the first challenge will be done there.
+- These steps were needed in order to initiate the project. From this point, as outlined in the project document, the project will have a new branch called `challenge1` and all changes related to the first challenge will be done there.
    
-### Changes in Branch `ch1`
+### Changes in Branch `challenge1`
 1. **Design and Implementation of models**:\
 The `News` and `Tag` models were created to represent the news articles and their associated tags. The `Tag` model contains a single attribute, `tag_label`, representing the name of the `tag`. The `News` model includes the following attributes:
    - `title`: The `title` of the `news`.
@@ -65,4 +65,6 @@ Unit tests have been created for the `models`, `serializers`, and `views` within
    ```
    The coverage report will be available at `project_root/htmlcov/index.html` .
 
-- Also **search functionality** and **pagination** were implemented in both the `News` and `Tag` views.
+*  Also **search functionality** and **pagination** were implemented in both the `News` and `Tag` views.
+
+- Since **Challenge 1** has been done properly, at this point branch `challenge1` will be merged into branch `master` .
