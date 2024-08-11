@@ -68,8 +68,15 @@ class NewsViewSetTest(APITestCase):
         self.assertEqual(response.data['results'][1]['title'], "filter news 2")
         self.assertNotIn("N3(w)ی", [news['title'] for news in response.data['results']])
 
+    def test_search_news(self):
+        response = self.client.get(reverse('news-list'), {'search': 'news'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(response.data['results'][0]['title'], "filter news 1")
+        self.assertEqual(response.data['results'][1]['title'], "filter news 2")
+        self.assertNotIn("N3(w)ی", [news['title'] for news in response.data['results']])
+
     def test_retrieve_news(self):
         response = self.client.get(reverse('news-detail', args=[self.news.id]))
-        
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['title'], "N3(w)ی")
