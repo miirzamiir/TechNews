@@ -64,3 +64,5 @@ Unit tests have been created for the `models`, `serializers`, and `views` within
    coverage run manage.py test && coverage html
    ```
    The coverage report will be available at `project_root/htmlcov/index.html` .
+
+- Also **search functionality** and **pagination** were implemented in both the `News` and `Tag` views.
