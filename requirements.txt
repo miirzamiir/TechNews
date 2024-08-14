@@ -4,3 +4,6 @@ psycopg2-binary
 python-dotenv
 django-filter
 coverage
+requests
+selenium
+webdriver-manager
