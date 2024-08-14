@@ -6,13 +6,23 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 
 class ZoomitCrawler:
+    """
+    Crawler class for retrieving news articles from the Zoomit website. Handles the process
+    of navigating through pages, collecting news links, and extracting and saving news content.
+    Save news data and tags into database if not existed.
+
+    Attributes:
+        service: Selenium service object to manage the ChromeDriver instance.
+        driver: Selenium WebDriver instance to automate chrome browser interaction.
+    """
 
     def __init__(self) -> None:
+        """Class constructor. Sets initial value for class attributes."""
         self.service = webdriver.ChromeService(ChromeDriverManager().install())
         self.driver = webdriver.Chrome(service=self.service)
 
     def run_crawler(self, from_page, to_page, archive="https://www.zoomit.ir/archive/") -> list:
-        # This method iterates over a given range of pages and collects all news links in a list.
+        """Iterates over a range of pages to collect news links and passes each news link to crawl_news method in order to crawl them."""
         collected_links = []
         for page_number in range(from_page, to_page + 1):
             url = archive + '?pageNumber=' + str(page_number)
@@ -27,7 +37,11 @@ class ZoomitCrawler:
             self.crawl_news(news_link)
 
     def crawl_news(self, news_url) -> None:
-        # This method gets a link to a news and saves that news and its tags in the database.
+        """
+        Crawls a single news article, finds html elements related to News attributes(title, text, and tags),
+        and extracts information from them by passing them to the related methods.
+        At the end, saves news if not existed.
+        """
         self.driver.get(news_url)
 
         title = self._get_news_title()
@@ -40,6 +54,7 @@ class ZoomitCrawler:
         self._save_news(title, text, news_url, tags)
         
     def _get_news_title(self) -> str:
+        """Extracts the title of a news article from the page and returns it. If no title was found, simply returns None."""
         try:
             title_xpath = '//h1[@class="typography__StyledDynamicTypographyComponent-t787b7-0 jQMKGt" or @class="typography__StyledDynamicTypographyComponent-t787b7-0 fzMmhL"]'
             title_element = self.driver.find_element(By.XPATH, title_xpath)
@@ -48,6 +63,7 @@ class ZoomitCrawler:
             return None
 
     def _get_news_text(self) -> str:
+        """Extracts the text of a news article from the page and returns it. If no text was found, simply returns None."""
         try:
             text_xpath = (
                 '//p[@class="typography__StyledDynamicTypographyComponent-t787b7-0 fZZfUi ParagraphElement__ParagraphBase-sc-1soo3i3-0 gOVZGU"] | '
@@ -60,6 +76,10 @@ class ZoomitCrawler:
             return None
 
     def _get_news_tags(self) -> list:
+        """
+        Extracts tags associated with a news article, saves new tags to the database and returns the list of 
+        associated tags. If no tag was found returns an empty list.
+        """
         try:
             tag_xpath = '//span[@class="typography__StyledDynamicTypographyComponent-t787b7-0 cHbulB" or @class="typography__StyledDynamicTypographyComponent-t787b7-0 bLZGOP"]'
             tag_elements = self.driver.find_elements(By.XPATH, tag_xpath)
@@ -76,10 +96,12 @@ class ZoomitCrawler:
         return tags
 
     def _save_news(self, title, text, resource, tags) -> None:
+        """Saves a news item and its associated tags to the database."""
         if not News.objects.filter(title=title).exists():
             news_item = News(title=title, text=text, resource=resource)
             news_item.save()
             news_item.tags.set(tags)
 
     def quit(self) -> None:
+        """Shuts down the WebDriver instance."""
         self.driver.quit()
