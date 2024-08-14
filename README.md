@@ -40,7 +40,7 @@ The project was initiated with the following steps:
 
 - These steps were needed in order to initiate the project. From this point, as outlined in the project document, the project will have a new branch called `challenge1` and all changes related to the first challenge will be done there.
    
-### Changes in Branch `challenge1`
+### Updates in Branch `challenge1`
 1. **Design and Implementation of models**:\
 The `News` and `Tag` models were created to represent the news articles and their associated tags. The `Tag` model contains a single attribute, `tag_label`, representing the name of the `tag`. The `News` model includes the following attributes:
    - `title`: The `title` of the `news`.
@@ -68,3 +68,19 @@ Unit tests have been created for the `models`, `serializers`, and `views` within
 *  Also **search functionality** and **pagination** were implemented in both the `News` and `Tag` views.
 
 - Since **Challenge 1** has been done properly, at this point branch `challenge1` will be merged into branch `master` .
+
+## Challenge 2: Collecting News Data
+
+The second challenge focuses on gathering news data, requiring the development of a crawler to extract information from [Zoomit](https://zoomit.ir). For this task, a new branch named `challenge2` was created.
+
+### Updates in Branch `challenge2`
+
+To create the crawler, it was necessary to design an appropriate architecture. **The first challenge** was deciding where to place the crawler within the project, and **the second challenge** was determining the best implementation approach.  
+Given that the webpage is dynamic, I used **Selenium** for the crawling process. The crawler is located at `news/utils/zoomit_crawler.py`.
+
+To simplify the execution of the crawler, a command was created for running the crawler. This command is implemented in `news/management/commands/crawl.py` using Django's `BaseCommand`. You can now easily run the crawler with the following command:
+
+```bash
+python3 manage.py crawl <from_page> <to_page>
+```
+This command will crawl the archive of [Zoomit](https://zoomit.ir). The first argument( `from_page` ) specifies the starting page, and the second argument( `to_page` ) defines the ending page.
