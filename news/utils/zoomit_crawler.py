@@ -3,6 +3,9 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from webdriver_manager.chrome import ChromeDriverManager
+import pytz
+from datetime import datetime
+from typing import List, Optional
 
 
 class ZoomitCrawler:
@@ -27,7 +30,7 @@ class ZoomitCrawler:
         and passes them to crawl_news method in order to crawl them.
         stop: max page number that this method is allowed to crawl.
         """
-        
+
         collected_links = []
         existing_links = list(resource[0] for resource in News.objects.values_list('resource'))
         
@@ -54,7 +57,7 @@ class ZoomitCrawler:
         for news_link in collected_links:
             self.crawl_news(news_link)
 
-    def run_crawler(self, from_page, to_page, archive="https://www.zoomit.ir/archive/") -> None:
+    def crawl_over_a_range(self, from_page, to_page, archive="https://www.zoomit.ir/archive/") -> None:
         """Iterates over a range of pages to collect news links and passes each news link to crawl_news method in order to crawl them."""
         collected_links = []
         for page_number in range(from_page, to_page + 1):
@@ -79,14 +82,15 @@ class ZoomitCrawler:
 
         title = self._get_news_title()
         text = self._get_news_text()
+        date_time = self._get_news_datetime()
 
         if (not title) or (not text):
             return None
 
         tags = self._get_news_tags()
-        self._save_news(title, text, news_url, tags)
+        self._save_news(title, text, news_url, date_time, tags)
         
-    def _get_news_title(self) -> str:
+    def _get_news_title(self) -> Optional[str]:
         """Extracts the title of a news article from the page and returns it. If no title was found, simply returns None."""
         try:
             title_xpath = '//h1[@class="typography__StyledDynamicTypographyComponent-t787b7-0 jQMKGt" or @class="typography__StyledDynamicTypographyComponent-t787b7-0 fzMmhL"]'
@@ -95,7 +99,7 @@ class ZoomitCrawler:
         except NoSuchElementException:
             return None
 
-    def _get_news_text(self) -> str:
+    def _get_news_text(self) -> Optional[str]:
         """Extracts the text of a news article from the page and returns it. If no text was found, simply returns None."""
         try:
             text_xpath = (
@@ -108,7 +112,7 @@ class ZoomitCrawler:
         except NoSuchElementException:
             return None
 
-    def _get_news_tags(self) -> list:
+    def _get_news_tags(self) -> List[Tag]:
         """
         Extracts tags associated with a news article, saves new tags to the database and returns the list of 
         associated tags. If no tag was found returns an empty list.
@@ -128,10 +132,39 @@ class ZoomitCrawler:
 
         return tags
 
-    def _save_news(self, title, text, resource, tags) -> None:
+    def _get_news_datetime(self) -> Optional[datetime]:
+        PERSIAN_MONTHS = {
+            "فروردین": 1,
+            "اردیبهشت": 2,
+            "خرداد": 3,
+            "تیر": 4,
+            "مرداد": 5,
+            "شهریور": 6,
+            "مهر": 7,
+            "آبان": 8,
+            "آذر": 9,
+            "دی": 10,
+            "بهمن": 11,
+            "اسفند": 12
+        }
+
+        try:
+            datetime_xpath = '//span[@class="typography__StyledDynamicTypographyComponent-t787b7-0 fTxyQo fa" or @class="typography__StyledDynamicTypographyComponent-t787b7-0 cHbulB fa"]'
+            datetime_element = self.driver.find_element(By.XPATH, datetime_xpath)
+            dt = datetime_element.text.split()
+            date_time = datetime(int(dt[3]), PERSIAN_MONTHS.get(dt[2]), int(dt[1]), int(dt[-1].split(':')[0]),
+                                          int(dt[-1].split(':')[1]),
+                                          tzinfo=pytz.timezone('Asia/Tehran'))
+
+            return date_time
+
+        except NoSuchElementException:
+            return None
+
+    def _save_news(self, title, text, resource, date, tags) -> None:
         """Saves a news item and its associated tags to the database."""
         if not News.objects.filter(title=title).exists():
-            news_item = News(title=title, text=text, resource=resource)
+            news_item = News(title=title, text=text, resource=resource, date=date)
             news_item.save()
             news_item.tags.set(tags)
 

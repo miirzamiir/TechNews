@@ -7,3 +7,5 @@ coverage
 requests
 selenium
 webdriver-manager
+jdatetime
+pytz

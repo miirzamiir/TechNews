@@ -19,7 +19,7 @@ class NewsViewSet(ReadOnlyModelViewSet):
         pagination_class: Control the pagination of the news list.
     """
     serializer_class = serializers.NewsSerializer
-    queryset = models.News.objects.all()
+    queryset = models.News.objects.all().order_by('-date')
     filter_backends = [SearchFilter, DjangoFilterBackend]
     search_fields = ('title', 'text')
     filterset_fields = ['tags', ]

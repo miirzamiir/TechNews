@@ -1,6 +1,9 @@
 from ..models import Tag, News
+from ..utils.persian_calendar import PersianCalendar
 from django.test import TestCase
 from django.db import IntegrityError
+from django.utils import timezone
+
 
 # tests for models.py
 class TagModelTest(TestCase):
@@ -88,3 +91,24 @@ class NewsModelTest(TestCase):
                 text="Testing duplicate title.",
                 resource="http://fakenews5.com/"
             )
+    
+    def test_news_date_default(self):
+        """Tests that the date field defaults to the current Persian datetime if not provided."""
+        news_without_date = News.objects.create(
+            title="News without date",
+            text="This news has no date set.",
+            resource="http://example.com/no-date"
+        )
+        self.assertIsNotNone(news_without_date.date)
+        self.assertEqual(news_without_date.date, PersianCalendar.currnet_persian_datetime())
+
+    def test_news_date_set_on_creation(self):
+        """Tests that the date field can be set on creation."""
+        custom_date = timezone.now()  
+        news_with_custom_date = News.objects.create(
+            title="News with custom date",
+            text="This news has a custom date.",
+            resource="http://example.com/custom-date",
+            date=custom_date
+        )
+        self.assertEqual(news_with_custom_date.date, custom_date)

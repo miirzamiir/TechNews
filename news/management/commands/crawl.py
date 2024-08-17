@@ -36,7 +36,7 @@ class Command(BaseCommand):
         
         elif from_page is not None and to_page is not None:
             # This means that we should crawl in the given range
-            crawler.run_crawler(from_page, to_page)
+            crawler.crawl_over_a_range(from_page, to_page)
             self.stdout.write(self.style.SUCCESS(f'Successfully crawled Zoomit from page {from_page} to page {to_page}.'))
         
         crawler.quit()

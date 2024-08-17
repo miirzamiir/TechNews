@@ -1,8 +1,10 @@
 from ..models import Tag, News
 from ..serializers import TagSerializer, NewsSerializer
-from django.urls import reverse
 from django.test import TestCase
-from rest_framework.test import APITestCase, APIClient
+from django.utils import timezone
+import pytz
+from datetime import datetime
+
 
 # Tests for serializers.py
 class TagSerializerTest(TestCase):
@@ -64,11 +66,13 @@ class NewsSerializerTest(TestCase):
 
     def setUp(self):
         """Sets up initial test data, including a Tag and a News instance."""
+        current_timezone = timezone.get_current_timezone()
         self.tag = Tag.objects.create(tag_label="N3(w)ی")
         self.news = News.objects.create(
             title="N3(w)ی",
             text="Th!s is @noth3r f@ke new$.",
-            resource="http://example.com/fake"
+            resource="http://example.com/fake",
+            date=timezone.make_aware(datetime(1403, 3, 26, 9, 30), current_timezone)
         )
         self.news.tags.add(self.tag)
 
@@ -80,6 +84,7 @@ class NewsSerializerTest(TestCase):
             "title": "N3(w)ی",
             "text": "Th!s is @noth3r f@ke new$.",
             "resource": "http://example.com/fake",
+            "date": self.news.date.isoformat(),
             "tags": [
                 {
                     "id": self.tag.id,
@@ -87,6 +92,7 @@ class NewsSerializerTest(TestCase):
                 }
             ]
         })
+        print(serializer.data['date'])
 
     def test_title_invalid_news_serialization(self):
         """Tests the validation of an invalid News instance with an empty title."""
@@ -124,4 +130,16 @@ class NewsSerializerTest(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn('resource', serializer.errors)
 
+    def test_invalid_date_format_serialization(self):
+        """Tests that the serializer raises a ValidationError for an invalid date format."""
+        invalid_data = {
+            "title": "Invalid Date Test",
+            "text": "This news has an invalid date format.",
+            "resource": "http://example.com/invalid-date",
+            "date": "invalid-date-format", 
+            "tags": [self.tag.id]
+        }
 
+        serializer = NewsSerializer(data=invalid_data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn('date', serializer.errors) 

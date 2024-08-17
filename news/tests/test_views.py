@@ -107,3 +107,10 @@ class NewsViewSetTest(APITestCase):
         response = self.client.get(reverse('news-detail', args=[self.news.id]))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['title'], "N3(w)ی")
+
+    def test_retrieve_news_with_date(self):
+        """Tests the retrieval of a single news item through the API, including the date field."""
+        response = self.client.get(reverse('news-detail', args=[self.news.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['title'], "N3(w)ی")
+        self.assertIn('date', response.data)

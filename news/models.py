@@ -1,4 +1,5 @@
 from django.db import models
+from .utils.persian_calendar import PersianCalendar
 
 
 class Tag(models.Model):
@@ -13,6 +14,12 @@ class News(models.Model):
     text = models.TextField()
     tags = models.ManyToManyField(to=Tag)
     resource = models.URLField(blank=False, unique=True)
+    date = models.DateTimeField(default=PersianCalendar.currnet_persian_datetime, blank=True, null=True)
 
+    def save(self, *args, **kwargs):
+        if self.date is None:
+            self.date = PersianCalendar.currnet_persian_datetime()
+        super().save(*args, **kwargs)
+    
     def __str__(self) -> str:
         return self.title

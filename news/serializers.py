@@ -30,4 +30,4 @@ class NewsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.News
-        fields = ('id', 'title', 'text', 'resource', 'tags')
+        fields = ('id', 'title', 'text', 'resource', 'date', 'tags')
