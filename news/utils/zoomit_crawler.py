@@ -21,7 +21,40 @@ class ZoomitCrawler:
         self.service = webdriver.ChromeService(ChromeDriverManager().install())
         self.driver = webdriver.Chrome(service=self.service)
 
-    def run_crawler(self, from_page, to_page, archive="https://www.zoomit.ir/archive/") -> list:
+    def crawl_unseen_news(self, stop=10, archive="https://www.zoomit.ir/archive/") -> None:
+        """
+        Iterates over zoomit archive pages and collects every news link which is not stored in database
+        and passes them to crawl_news method in order to crawl them.
+        stop: max page number that this method is allowed to crawl.
+        """
+        
+        collected_links = []
+        existing_links = list(resource[0] for resource in News.objects.values_list('resource'))
+        
+        for page_number in range(1, stop+1):
+            url = archive + '?pageNumber=' + str(page_number)
+            self.driver.get(url=url)
+            self.driver.implicitly_wait(0.5) # waits for page to load
+            links_x_path = '//a[@class="link__CustomNextLink-sc-1r7l32j-0 eoKbWT BrowseArticleListItemDesktop__WrapperLink-zb6c6m-6 bzMtyO"]'
+            news_links = self.driver.find_elements(By.XPATH, links_x_path)
+            
+            for news_link in news_links:
+                href = news_link.get_attribute('href')
+                if href in existing_links:
+                    break  # Stops crawling if an existing link was found
+                
+                collected_links.append(href)
+
+            else:
+                continue  # Only continue to the next page if we did not break the loop
+
+            break  # Break the outer loop if we found an existing link
+
+        print(f'Crawling {len(collected_links)} news from https://zoomit.ir')
+        for news_link in collected_links:
+            self.crawl_news(news_link)
+
+    def run_crawler(self, from_page, to_page, archive="https://www.zoomit.ir/archive/") -> None:
         """Iterates over a range of pages to collect news links and passes each news link to crawl_news method in order to crawl them."""
         collected_links = []
         for page_number in range(from_page, to_page + 1):
