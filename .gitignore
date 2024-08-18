@@ -277,3 +277,6 @@ pyrightconfig.json
 ### Test Coverage ###
 .coverage
 htmlcov/*
+
+### Celery ###
+celerybeat-schedule.db

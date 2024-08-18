@@ -9,3 +9,6 @@ selenium
 webdriver-manager
 jdatetime
 pytz
+redis
+celery
+flower

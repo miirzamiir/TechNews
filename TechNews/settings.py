@@ -138,3 +138,11 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 50
 }
+
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL')
+CELERY_BEAT_SCHEDULE = {
+    'crawl_zoomit_unseen_news': {
+        'task': 'news.tasks.crawl_zoomit_unseen_news',
+        'schedule': 3 * 60
+    }
+}
