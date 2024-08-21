@@ -1,3 +1,4 @@
+from django.db.models import Q
 from news.models import News, Tag
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -163,7 +164,7 @@ class ZoomitCrawler:
 
     def _save_news(self, title, text, resource, date, tags) -> None:
         """Saves a news item and its associated tags to the database."""
-        if not News.objects.filter(title=title).exists():
+        if not News.objects.filter(Q(title=title) | Q(resource=resource) | Q(text=text)).exists():
             news_item = News(title=title, text=text, resource=resource, date=date)
             news_item.save()
             news_item.tags.set(tags)
