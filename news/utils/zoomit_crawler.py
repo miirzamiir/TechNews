@@ -1,8 +1,12 @@
+from django.db.models import Q
 from news.models import News, Tag
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from webdriver_manager.chrome import ChromeDriverManager
+import pytz
+from datetime import datetime
+from typing import List, Optional
 
 
 class ZoomitCrawler:
@@ -18,10 +22,48 @@ class ZoomitCrawler:
 
     def __init__(self) -> None:
         """Class constructor. Sets initial value for class attributes."""
+        self.chrome_options = webdriver.ChromeOptions()
+        self.chrome_options.set_capability('browserName', 'chrome')
+        self.chrome_options.add_argument('--headless')  # Run in headless mode
+        self.chrome_options.add_argument('--no-sandbox')  # Bypass OS security model
+        self.chrome_options.add_argument('--disable-dev-shm-usage')  # Overcome limited resource problems
         self.service = webdriver.ChromeService(ChromeDriverManager().install())
-        self.driver = webdriver.Chrome(service=self.service)
+        self.driver = webdriver.Chrome(service=self.service, options=self.chrome_options)
 
-    def run_crawler(self, from_page, to_page, archive="https://www.zoomit.ir/archive/") -> list:
+    def crawl_unseen_news(self, stop=10, archive="https://www.zoomit.ir/archive/") -> None:
+        """
+        Iterates over zoomit archive pages and collects every news link which is not stored in database
+        and passes them to crawl_news method in order to crawl them.
+        stop: max page number that this method is allowed to crawl.
+        """
+
+        collected_links = []
+        existing_links = list(resource[0] for resource in News.objects.values_list('resource'))
+        
+        for page_number in range(1, stop+1):
+            url = archive + '?pageNumber=' + str(page_number)
+            self.driver.get(url=url)
+            self.driver.implicitly_wait(0.5) # waits for page to load
+            links_x_path = '//a[@class="link__CustomNextLink-sc-1r7l32j-0 eoKbWT BrowseArticleListItemDesktop__WrapperLink-zb6c6m-6 bzMtyO"]'
+            news_links = self.driver.find_elements(By.XPATH, links_x_path)
+            
+            for news_link in news_links:
+                href = news_link.get_attribute('href')
+                if href in existing_links:
+                    break  # Stops crawling if an existing link was found
+                
+                collected_links.append(href)
+
+            else:
+                continue  # Only continue to the next page if we did not break the loop
+
+            break  # Break the outer loop if we found an existing link
+
+        print(f'Crawling {len(collected_links)} news from https://zoomit.ir')
+        for news_link in collected_links:
+            self.crawl_news(news_link)
+
+    def crawl_over_a_range(self, from_page, to_page, archive="https://www.zoomit.ir/archive/") -> None:
         """Iterates over a range of pages to collect news links and passes each news link to crawl_news method in order to crawl them."""
         collected_links = []
         for page_number in range(from_page, to_page + 1):
@@ -46,14 +88,15 @@ class ZoomitCrawler:
 
         title = self._get_news_title()
         text = self._get_news_text()
+        date_time = self._get_news_datetime()
 
         if (not title) or (not text):
             return None
 
         tags = self._get_news_tags()
-        self._save_news(title, text, news_url, tags)
+        self._save_news(title, text, news_url, date_time, tags)
         
-    def _get_news_title(self) -> str:
+    def _get_news_title(self) -> Optional[str]:
         """Extracts the title of a news article from the page and returns it. If no title was found, simply returns None."""
         try:
             title_xpath = '//h1[@class="typography__StyledDynamicTypographyComponent-t787b7-0 jQMKGt" or @class="typography__StyledDynamicTypographyComponent-t787b7-0 fzMmhL"]'
@@ -62,7 +105,7 @@ class ZoomitCrawler:
         except NoSuchElementException:
             return None
 
-    def _get_news_text(self) -> str:
+    def _get_news_text(self) -> Optional[str]:
         """Extracts the text of a news article from the page and returns it. If no text was found, simply returns None."""
         try:
             text_xpath = (
@@ -75,7 +118,7 @@ class ZoomitCrawler:
         except NoSuchElementException:
             return None
 
-    def _get_news_tags(self) -> list:
+    def _get_news_tags(self) -> List[Tag]:
         """
         Extracts tags associated with a news article, saves new tags to the database and returns the list of 
         associated tags. If no tag was found returns an empty list.
@@ -95,10 +138,39 @@ class ZoomitCrawler:
 
         return tags
 
-    def _save_news(self, title, text, resource, tags) -> None:
+    def _get_news_datetime(self) -> Optional[datetime]:
+        PERSIAN_MONTHS = {
+            "فروردین": 1,
+            "اردیبهشت": 2,
+            "خرداد": 3,
+            "تیر": 4,
+            "مرداد": 5,
+            "شهریور": 6,
+            "مهر": 7,
+            "آبان": 8,
+            "آذر": 9,
+            "دی": 10,
+            "بهمن": 11,
+            "اسفند": 12
+        }
+
+        try:
+            datetime_xpath = '//span[@class="typography__StyledDynamicTypographyComponent-t787b7-0 fTxyQo fa" or @class="typography__StyledDynamicTypographyComponent-t787b7-0 cHbulB fa"]'
+            datetime_element = self.driver.find_element(By.XPATH, datetime_xpath)
+            dt = datetime_element.text.split()
+            date_time = datetime(int(dt[3]), PERSIAN_MONTHS.get(dt[2]), int(dt[1]), int(dt[-1].split(':')[0]),
+                                          int(dt[-1].split(':')[1]),
+                                          tzinfo=pytz.timezone('Asia/Tehran'))
+
+            return date_time
+
+        except NoSuchElementException:
+            return None
+
+    def _save_news(self, title, text, resource, date, tags) -> None:
         """Saves a news item and its associated tags to the database."""
-        if not News.objects.filter(title=title).exists():
-            news_item = News(title=title, text=text, resource=resource)
+        if not News.objects.filter(Q(title=title) | Q(resource=resource) | Q(text=text)).exists():
+            news_item = News(title=title, text=text, resource=resource, date=date)
             news_item.save()
             news_item.tags.set(tags)
 
