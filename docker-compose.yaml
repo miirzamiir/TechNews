@@ -3,7 +3,7 @@ name: 'technews'
 services:
 
   postgres:
-    image: postgres:13
+    build: postgresql/
     ports:
       - 5432:5432
     restart: always
@@ -36,18 +36,20 @@ services:
     depends_on:
       - redis
       - api
+      - postgres
     volumes:
       - .:/app
-    command: celery -A TechNews worker --loglevel=info
+    command: ./wait-for-it.sh postgres:5432 -- celery -A TechNews worker --loglevel=info
 
   celery-beat:
     build: .
     depends_on:
       - redis
       - api
+      - postgres
     volumes:
       - .:/app
-    command: celery -A TechNews beat --loglevel=info
+    command: ./wait-for-it.sh postgres:5432 -- celery -A TechNews beat --loglevel=info
 
   flower:
     build: .
@@ -55,14 +57,13 @@ services:
       - api
       - redis
       - celery
+      - postgres
     environment:
       - CELERY_BROKER=${CELERY_BROKER_URL}
       - CELERY_BACKEND=${CELERY_BROKER_URL}
     ports:
       - 5555:5555
-    command: celery -A TechNews flower
+    command: ./wait-for-it.sh postgres:5432 -- celery -A TechNews flower
 
 volumes:
   postgres-data:
-
-
