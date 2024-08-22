@@ -22,8 +22,13 @@ class ZoomitCrawler:
 
     def __init__(self) -> None:
         """Class constructor. Sets initial value for class attributes."""
+        self.chrome_options = webdriver.ChromeOptions()
+        self.chrome_options.set_capability('browserName', 'chrome')
+        self.chrome_options.add_argument('--headless')  # Run in headless mode
+        self.chrome_options.add_argument('--no-sandbox')  # Bypass OS security model
+        self.chrome_options.add_argument('--disable-dev-shm-usage')  # Overcome limited resource problems
         self.service = webdriver.ChromeService(ChromeDriverManager().install())
-        self.driver = webdriver.Chrome(service=self.service)
+        self.driver = webdriver.Chrome(service=self.service, options=self.chrome_options)
 
     def crawl_unseen_news(self, stop=10, archive="https://www.zoomit.ir/archive/") -> None:
         """

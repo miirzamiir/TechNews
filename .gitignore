@@ -280,3 +280,6 @@ htmlcov/*
 
 ### Celery ###
 celerybeat-schedule.db
+
+### DB backups ###
+db_backups/

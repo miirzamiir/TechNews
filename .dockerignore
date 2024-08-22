@@ -1,0 +1,8 @@
+venv/
+کارآموزی بک‌اند.pdf
+.pytest_cache/
+.git/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
