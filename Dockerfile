@@ -2,6 +2,8 @@ FROM python:3.11
 
 ENV PYTHONUNBUFFERED=1
 
+RUN groupadd -g 1000 techuser && useradd -u 1000 -g techuser -m techuser
+
 WORKDIR /app
 
 RUN apt-get update
@@ -13,5 +15,8 @@ COPY ./requirements.txt /app/
 RUN pip install -r requirements.txt
 
 COPY . /app/
+
+RUN chown -R techuser:techuser /app
+USER techuser
 
 EXPOSE 8000
