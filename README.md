@@ -84,3 +84,44 @@ To simplify the execution of the crawler, a command was created for running the 
 python3 manage.py crawl <from_page> <to_page>
 ```
 This command will crawl the archive of [Zoomit](https://zoomit.ir). The first argument( `from_page` ) specifies the starting page, and the second argument( `to_page` ) defines the ending page.
+
+## Pre-Challenge Modifications
+
+To enhance the efficiency of Challenge 3, I implemented several modifications to the `News` model and the `ZoomitCrawler`. Specifically, I added a `date` field to the `News` model, which necessitated updates across various components, including:
+
+- **NewsSerializer**: Adjusted to accommodate the new `date` field.
+- **NewsModelViewSet**: Updated to ensure proper handling of the `date` attribute in API responses.
+- **NewsModelTest**: Revised to include tests for the new `date` functionality, ensuring data integrity.
+- **ZoomitCrawler**: Modified to utilize the `date` field when crawling news articles.
+
+Following these changes, I introduced the `crawl_unseen_news` method within the `ZoomitCrawler`. This method iterates over the Zoomit archive, crawling news articles until it encounters one that is already stored in the database. It includes a `stop` parameter, which specifies the page number at which the crawler will cease collecting news links if no new articles are detected. This method can be executed using the following command:
+
+```bash
+python3 manage.py crawl
+```
+
+## Challenge 3: Crawler Automation and Dockerizing the Project
+
+The third challenge centers on automating the news crawler with **Celery** and **Celery Beat**, monitoring the automated process using **Celery Flower**, and Dockerizing the entire project.
+
+### Automation with Celery
+
+To automate the crawler, a **Message Broker** was required. I opted for **Redis** due to its simplicity and robust performance. The steps taken include:
+
+- **Defining Celery Tasks**: I created tasks that encapsulate the crawling logic, allowing for asynchronous execution.
+- **Scheduling with Celery Beat**: I configured Celery Beat to schedule the crawling tasks at specified intervals, ensuring continuous operation.
+- **Monitoring with Celery Flower**: I integrated Celery Flower to provide a real-time dashboard for monitoring task execution and performance metrics.
+
+### Dockerizing the Project
+
+To facilitate deployment and ensure consistency across environments, I Dockerized the project. The following steps were undertaken:
+
+- **Creating the Dockerfile**: I wrote a `Dockerfile` to define the application environment, including dependencies and configurations.
+- **Setting Up docker-compose.yaml**: This file was created to manage multi-container Docker applications, allowing for easy orchestration of services.
+- **Handling Database Preparation**: To address potential latency issues during database preparation, I utilized **wait-for-it**. This script ensures that the application waits for the database to be ready before proceeding.
+- **Custom Database Image**: Since the project requires a backup of the data, I created a custom `Dockerfile` for the database service rather than using the standard `postgres` image.
+- **Creating docker-entrypoint.sh**: This script was developed to automate the migration process before launching the Django application, ensuring that the database schema is up-to-date.
+
+---
+
+Thank you for taking the time to read this document. Your feedback and insights are always welcome!
